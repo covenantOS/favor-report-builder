@@ -86,7 +86,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     // PERIODS
     // ============================================================
     if (path === 'periods' && method === 'GET') {
-      const rows = await db.prepare('SELECT * FROM reporting_periods ORDER BY year DESC, quarter DESC, month DESC').all();
+      const includeAll = url.searchParams.get('all') === 'true';
+      const query = includeAll
+        ? 'SELECT * FROM reporting_periods ORDER BY year DESC, quarter DESC, month DESC'
+        : 'SELECT * FROM reporting_periods WHERE year >= 2026 ORDER BY year DESC, quarter DESC, month DESC';
+      const rows = await db.prepare(query).all();
       return json({ periods: rows.results });
     }
 
@@ -208,7 +212,23 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const pid = parseInt(url.searchParams.get('period_id') || '0');
       if (!pid) return json({ error: 'period_id required' }, 400);
       const rows = await db.prepare('SELECT * FROM direct_mail_appeals WHERE period_id = ? ORDER BY appeal_id').bind(pid).all();
-      return json({ appeals: rows.results });
+
+      // YoY: find the same quarter from previous year
+      const currentPeriod = await db.prepare('SELECT * FROM reporting_periods WHERE id = ?').bind(pid).first<{ year: number; quarter: number }>();
+      let yoyAppeals: unknown[] = [];
+      let yoyPeriodLabel = '';
+      if (currentPeriod) {
+        const prevPeriod = await db.prepare(
+          'SELECT * FROM reporting_periods WHERE year = ? AND quarter = ? AND month IS NULL'
+        ).bind(currentPeriod.year - 1, currentPeriod.quarter).first<{ id: number; label: string }>();
+        if (prevPeriod) {
+          const prevRows = await db.prepare('SELECT * FROM direct_mail_appeals WHERE period_id = ? ORDER BY appeal_id').bind(prevPeriod.id).all();
+          yoyAppeals = prevRows.results;
+          yoyPeriodLabel = prevPeriod.label;
+        }
+      }
+
+      return json({ appeals: rows.results, yoy: { appeals: yoyAppeals, periodLabel: yoyPeriodLabel } });
     }
 
     if (path === 'dashboard/email' && method === 'GET') {

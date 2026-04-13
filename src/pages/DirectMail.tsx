@@ -5,31 +5,68 @@ import { PeriodSelector } from '../components/PeriodSelector';
 import { dashboard } from '../lib/api';
 import { formatCurrency, formatCurrencyDetailed, formatCompact, formatPct } from '../lib/formatters';
 import type { DirectMailAppeal, ReportingPeriod } from '../lib/types';
-import { DollarSign, Gift, TrendingUp } from 'lucide-react';
+import { DollarSign, Gift, TrendingUp, ArrowRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { CHART_PALETTE } from '../lib/chartColors';
+
+function sum(arr: DirectMailAppeal[], key: keyof DirectMailAppeal): number {
+  return arr.reduce((s, a) => s + (Number(a[key]) || 0), 0);
+}
+
+function YoYRow({ label, current, previous, format }: { label: string; current: number; previous: number; format: (n: number) => string }) {
+  const delta = previous > 0 ? ((current - previous) / previous) * 100 : null;
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
+      <span className="text-sm text-gray-600 w-36">{label}</span>
+      <span className="text-sm text-gray-400 w-28 text-right">{format(previous)}</span>
+      <ArrowRight size={14} className="text-gray-300 mx-2" />
+      <span className="text-sm font-semibold w-28 text-right">{format(current)}</span>
+      {delta != null ? (
+        <span className={`text-sm font-medium w-20 text-right ${delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-rose-600' : 'text-gray-400'}`}>
+          {delta > 0 ? '+' : ''}{delta.toFixed(1)}%
+        </span>
+      ) : (
+        <span className="text-sm text-gray-300 w-20 text-right">--</span>
+      )}
+    </div>
+  );
+}
 
 export function DirectMail() {
   const [periodId, setPeriodId] = useState<number | null>(null);
   const [, setPeriod] = useState<ReportingPeriod | null>(null);
   const [appeals, setAppeals] = useState<DirectMailAppeal[]>([]);
+  const [yoyAppeals, setYoyAppeals] = useState<DirectMailAppeal[]>([]);
+  const [yoyPeriodLabel, setYoyPeriodLabel] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!periodId) return;
     setLoading(true);
     dashboard.mail(periodId)
-      .then(r => setAppeals(r.appeals))
-      .catch(() => setAppeals([]))
+      .then(r => {
+        setAppeals(r.appeals);
+        setYoyAppeals((r as { yoy?: { appeals: DirectMailAppeal[]; periodLabel: string } }).yoy?.appeals || []);
+        setYoyPeriodLabel((r as { yoy?: { appeals: DirectMailAppeal[]; periodLabel: string } }).yoy?.periodLabel || '');
+      })
+      .catch(() => { setAppeals([]); setYoyAppeals([]); })
       .finally(() => setLoading(false));
   }, [periodId]);
 
-  const totalGiven = appeals.reduce((s, a) => s + (a.total_given || 0), 0);
-  const totalGifts = appeals.reduce((s, a) => s + (a.gifts || 0), 0);
-  const totalDonors = appeals.reduce((s, a) => s + (a.donors || 0), 0);
-  const totalCost = appeals.reduce((s, a) => s + (a.total_cost || 0), 0);
-  const profitLoss = appeals.reduce((s, a) => s + (a.profit_loss || 0), 0);
+  const totalGiven = sum(appeals, 'total_given');
+  const totalGifts = sum(appeals, 'gifts');
+  const totalDonors = sum(appeals, 'donors');
+  const totalCost = sum(appeals, 'total_cost');
+  const profitLoss = sum(appeals, 'profit_loss');
   const avgPerGift = totalGifts > 0 ? totalGiven / totalGifts : 0;
+
+  // YoY totals
+  const prevGiven = sum(yoyAppeals, 'total_given');
+  const prevGifts = sum(yoyAppeals, 'gifts');
+  const prevCost = sum(yoyAppeals, 'total_cost');
+  const prevProfit = sum(yoyAppeals, 'profit_loss');
+  const prevAvgPerGift = prevGifts > 0 ? prevGiven / prevGifts : 0;
+  const givenDelta = prevGiven > 0 ? ((totalGiven - prevGiven) / prevGiven) * 100 : null;
 
   const chartData = appeals.map(a => ({
     name: a.appeal_id,
@@ -37,6 +74,12 @@ export function DirectMail() {
     'Total Cost': a.total_cost || 0,
     'Profit': a.profit_loss || 0,
   }));
+
+  // YoY bar chart comparing quarters side by side
+  const yoyChartData = yoyAppeals.length > 0 ? [
+    { name: yoyPeriodLabel, 'Total Given': prevGiven, Gifts: prevGifts, 'Avg/Gift': prevAvgPerGift },
+    { name: 'Current', 'Total Given': totalGiven, Gifts: totalGifts, 'Avg/Gift': avgPerGift },
+  ] : [];
 
   const columns: Column<DirectMailAppeal>[] = [
     { key: 'appeal_id', label: 'Appeal ID' },
@@ -70,15 +113,10 @@ export function DirectMail() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="Total Given" value={formatCurrency(totalGiven)} icon={DollarSign} color="green" />
+            <KPICard label="Total Given" value={formatCurrency(totalGiven)} delta={givenDelta} deltaLabel="vs prior year" icon={DollarSign} color="green" />
             <KPICard label="Total Gifts" value={formatCompact(totalGifts)} icon={Gift} color="blue" />
             <KPICard label="Avg per Gift" value={formatCurrency(avgPerGift)} color="amber" />
-            <KPICard
-              label="Profit/Loss"
-              value={formatCurrency(profitLoss)}
-              icon={TrendingUp}
-              color={profitLoss >= 0 ? 'green' : 'rose'}
-            />
+            <KPICard label="Profit/Loss" value={formatCurrency(profitLoss)} icon={TrendingUp} color={profitLoss >= 0 ? 'green' : 'rose'} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -87,7 +125,7 @@ export function DirectMail() {
               <div className="flex justify-between"><span className="text-gray-500">Appeals</span><span className="font-medium">{appeals.length}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Total Donors</span><span className="font-medium">{formatCompact(totalDonors)}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Total Cost</span><span className="font-medium">{formatCurrency(totalCost)}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Avg Response</span><span className="font-medium">{formatPct(totalGifts && appeals.reduce((s, a) => s + (a.num_solicitors || 0), 0) ? (totalGifts / appeals.reduce((s, a) => s + (a.num_solicitors || 0), 0)) * 100 : 0)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Avg Response</span><span className="font-medium">{formatPct(totalGifts && sum(appeals, 'num_solicitors') ? (totalGifts / sum(appeals, 'num_solicitors')) * 100 : 0)}</span></div>
             </div>
             <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Appeal Comparison</h3>
@@ -107,6 +145,35 @@ export function DirectMail() {
               </div>
             </div>
           </div>
+
+          {/* Year-over-Year Comparison */}
+          {yoyAppeals.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <h3 className="text-sm font-semibold text-gray-700 mb-1">Year-over-Year Comparison</h3>
+                <p className="text-xs text-gray-400 mb-4">{yoyPeriodLabel} vs Current Quarter</p>
+                <YoYRow label="Total Given" current={totalGiven} previous={prevGiven} format={formatCurrency} />
+                <YoYRow label="Total Gifts" current={totalGifts} previous={prevGifts} format={formatCompact} />
+                <YoYRow label="Avg per Gift" current={avgPerGift} previous={prevAvgPerGift} format={formatCurrency} />
+                <YoYRow label="Total Cost" current={totalCost} previous={prevCost} format={formatCurrency} />
+                <YoYRow label="Profit/Loss" current={profitLoss} previous={prevProfit} format={formatCurrency} />
+              </div>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">YoY: Total Given</h3>
+                <div className="h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={yoyChartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                      <Bar dataKey="Total Given" fill={CHART_PALETTE[0]} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <div className="px-5 py-4 border-b border-gray-100">
