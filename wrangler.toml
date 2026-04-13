@@ -5,7 +5,7 @@ pages_build_output_dir = "./dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "favor-reports"
-database_id = "placeholder-will-update-after-creation"
+database_id = "f6eb9c23-8b06-403d-93b6-0e9fd6856a9e"
 
 [vars]
 ENVIRONMENT = "production"
