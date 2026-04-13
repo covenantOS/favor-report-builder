@@ -127,11 +127,16 @@ export interface ThankYouReceipt {
   period_id: number;
   appeal_id: string;
   description: string | null;
+  num_solicitors: number | null;
   gifts: number | null;
   donors: number | null;
+  response_pct: number | null;
   total_given: number | null;
   avg_per_gift: number | null;
   avg_per_donor: number | null;
+  total_cost: number | null;
+  cost_per_gift: number | null;
+  cost_per_donor: number | null;
   period?: ReportingPeriod;
 }
 
