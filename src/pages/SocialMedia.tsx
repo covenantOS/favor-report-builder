@@ -92,27 +92,36 @@ export function SocialMedia() {
 
       {/* Overview: All accounts at a glance */}
       {accountsWithData.length > 0 && !accountId && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {accountsWithData.map(m => (
-            <button
-              key={m.id}
-              onClick={() => setAccountId(m.account_id)}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-left hover:border-gray-300 hover:shadow transition-all"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: PLATFORM_COLORS[m.account?.platform || ''] || '#666' }} />
-                <span className="text-sm font-semibold text-gray-900">{m.account?.account_name}</span>
-                <span className="text-xs text-gray-400 capitalize">{m.account?.platform}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {m.total_views != null && <div><span className="text-gray-500">Views</span><div className="font-semibold">{formatCompact(m.total_views)}</div></div>}
-                {m.total_followers != null && <div><span className="text-gray-500">Followers</span><div className="font-semibold">{formatCompact(m.total_followers)}</div></div>}
-                {m.total_interactions != null && <div><span className="text-gray-500">Interactions</span><div className="font-semibold">{formatCompact(m.total_interactions)}</div></div>}
-                {m.net_follower_growth != null && <div><span className="text-gray-500">Growth</span><div className="font-semibold text-emerald-600">+{formatCompact(m.net_follower_growth)}</div></div>}
-              </div>
-            </button>
-          ))}
-        </div>
+        <>
+          <p className="text-sm text-gray-500">Click any account below to see full details.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {accountsWithData.map(m => (
+              <button
+                key={m.id}
+                onClick={() => setAccountId(m.account_id)}
+                className="group bg-white rounded-xl border-2 border-gray-200 shadow-sm p-5 text-left hover:border-primary hover:shadow-md transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: PLATFORM_COLORS[m.account?.platform || ''] || '#666' }} />
+                  <span className="text-sm font-semibold text-gray-900">{m.account?.account_name}</span>
+                  <span className="text-xs text-gray-400 capitalize">{m.account?.platform}</span>
+                  <span className="ml-auto text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                    View Details <span className="text-lg leading-none">&rarr;</span>
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {m.total_views != null && <div><span className="text-gray-500">Views</span><div className="font-semibold">{formatCompact(m.total_views)}</div></div>}
+                  {m.total_followers != null && <div><span className="text-gray-500">Followers</span><div className="font-semibold">{formatCompact(m.total_followers)}</div></div>}
+                  {m.total_interactions != null && <div><span className="text-gray-500">Interactions</span><div className="font-semibold">{formatCompact(m.total_interactions)}</div></div>}
+                  {m.net_follower_growth != null && <div><span className="text-gray-500">Growth</span><div className="font-semibold text-emerald-600">+{formatCompact(m.net_follower_growth)}</div></div>}
+                </div>
+                <div className="mt-3 pt-2 border-t border-gray-100 text-xs text-primary font-medium group-hover:text-primary-dark">
+                  Click to view full report &rarr;
+                </div>
+              </button>
+            ))}
+          </div>
+        </>
       )}
 
       {accountsWithData.length === 0 && !loading && (
