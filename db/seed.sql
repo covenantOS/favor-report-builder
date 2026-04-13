@@ -1,86 +1,8 @@
--- Seed reporting periods
--- 2025 Quarters
-INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2025, 1, NULL, '2025-Q1');
-INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2025, 2, NULL, '2025-Q2');
-INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2025, 3, NULL, '2025-Q3');
-INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2025, 4, NULL, '2025-Q4');
--- 2026 Q1 and months
+-- Seed reporting periods (2026 only)
 INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2026, 1, NULL, '2026-Q1');
 INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2026, 1, 1, '2026-01');
 INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2026, 1, 2, '2026-02');
 INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2026, 1, 3, '2026-03');
-
--- ============================================================
--- 2025 DIRECT MAIL APPEALS (from MK25 L25 Appeal Reports q1-q4.xlsx)
--- ============================================================
-
--- Q1 2025 (period: 2025-Q1)
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q1'),
-  'L251', 'Q1 2025 - Online/Other', NULL, NULL, 32, NULL, NULL, 1403.28, 43.85, NULL, 0, 0, 1403.28, 0, NULL
-);
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q1'),
-  'L252', 'Otim (Active Donors)', 'Otim (Active Donors)', 2112, 83, NULL, 3.93, 10744.00, 129.45, NULL, 2371.93, 146.91, 8372.07, 28.58, 2225.02
-);
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q1'),
-  'L253', 'Rajad (Active Donors)', 'Rajad (Active Donors)', 2726, 116, NULL, 4.26, 14836.34, 127.90, NULL, 2696.07, 205.32, 12140.27, 23.24, 2490.75
-);
-
--- Q2 2025 (period: 2025-Q2)
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q2'),
-  'L254', 'FISOM', 'FISOM', 2699, 88, NULL, 3.26, 18474.19, 209.93, NULL, 2684.91, 155.76, 15789.28, 30.51, 2529.15
-);
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q2'),
-  'L255', 'PBS', 'PBS', 2766, 146, NULL, 5.28, 11144.57, 76.33, NULL, 3201.18, 258.42, 7943.39, 21.93, 2942.76
-);
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q2'),
-  'L256', 'GIFT', 'GIFT', 3226, 178, NULL, 5.52, 12990.36, 72.98, NULL, 3257.82, 315.06, 9732.54, 18.30, 2942.76
-);
-
--- Q3 2025 (period: 2025-Q3)
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q3'),
-  'L257', 'PBS', 'PBS', 3207, 166, NULL, 5.15, 16137.56, 97.21, NULL, 3339.52, 293.82, 12798.04, 20.12, 3045.70
-);
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q3'),
-  'L258', 'GIFT', 'GIFT', 3226, 141, NULL, 4.37, 7982.90, 56.62, NULL, 3347.57, 249.57, 4635.33, 23.74, 3098.00
-);
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q3'),
-  'L259', NULL, NULL, 3207, 112, NULL, 3.49, 10239.02, 91.42, NULL, 3227.79, 198.24, 7011.23, 28.82, 3029.55
-);
-
--- Q4 2025 (period: 2025-Q4)
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q4'),
-  'L25A', NULL, NULL, 3199, 177, NULL, 5.57, 11411.67, 64.47, NULL, 3412.44, 313.29, 7999.23, 19.28, 3099.15
-);
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q4'),
-  'L25B', NULL, NULL, 3180, 133, NULL, 4.18, 14107.05, 106.07, NULL, 3350.83, 235.41, 10756.22, 25.19, 3115.42
-);
-INSERT OR REPLACE INTO direct_mail_appeals (period_id, appeal_id, description, topic_audience, num_solicitors, gifts, donors, response_pct, total_given, avg_per_gift, avg_per_donor, total_cost, brm_returns_cost, profit_loss, cost_per_donor, package_cost)
-VALUES (
-  (SELECT id FROM reporting_periods WHERE label = '2025-Q4'),
-  'L25C', NULL, NULL, 3181, 127, NULL, 3.99, 18134.39, 142.79, NULL, 3341.19, 224.79, 14793.20, 26.31, 3116.40
-);
 
 -- ============================================================
 -- 2026 Q1 DIRECT MAIL APPEALS (from q1 2026 appeals.csv)
@@ -316,7 +238,6 @@ INSERT INTO social_top_content (account_id, period_id, ranking_type, rank_positi
 
 -- Upload log entries for seed data
 INSERT INTO upload_log (uploaded_by, data_category, period_label, rows_imported, status, notes) VALUES
-  ('claude', 'direct_mail', '2025 Q1-Q4', 12, 'success', 'Historical 2025 data from MK25 L25 Appeal Reports'),
   ('claude', 'direct_mail', '2026-Q1', 3, 'success', 'Q1 2026 appeals from CSV'),
   ('claude', 'thank_you', '2026-Q1', 3, 'success', 'Q1 2026 TY receipts from CSV'),
   ('claude', 'email', '2026-Q1', 26, 'success', 'Q1 2026 newsletters from docx'),
