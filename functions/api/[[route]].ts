@@ -12,8 +12,6 @@ function json(data: unknown, status = 200, extraHeaders: Record<string, string> 
   });
 }
 
-const PUBLIC_ROUTES = ['auth/login', 'auth/logout', 'auth/setup'];
-
 export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env, params } = context;
   const url = new URL(request.url);
@@ -23,13 +21,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   if (method === 'OPTIONS') {
     return new Response(null, { status: 204 });
-  }
-
-  // Auth check for non-public routes
-  let user: { id: number; username: string; name: string | null; role: string } | null = null;
-  if (!PUBLIC_ROUTES.some(r => path === r)) {
-    user = await validateSession(db, request.headers.get('Cookie'));
-    if (!user) return json({ error: 'Unauthorized' }, 401);
   }
 
   try {
@@ -95,7 +86,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }
 
     if (path === 'periods' && method === 'POST') {
-      if (user?.role !== 'admin') return json({ error: 'Admin required' }, 403);
+
       const body = await request.json() as { year: number; quarter: number; month?: number };
       const label = body.month
         ? `${body.year}-${String(body.month).padStart(2, '0')}`
@@ -275,7 +266,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     // DATA INGESTION (called by Claude or admin)
     // ============================================================
     if (path === 'data/social' && method === 'POST') {
-      if (user?.role !== 'admin') return json({ error: 'Admin required' }, 403);
+
       const body = await request.json() as {
         account_id: number; period_id: number; metrics: Record<string, unknown>;
         top_content?: Record<string, unknown>[]; demographics?: Record<string, unknown>[];
@@ -327,13 +318,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
       await db.prepare(
         "INSERT INTO upload_log (uploaded_by, data_category, period_label, rows_imported, status) VALUES (?, 'social_media', ?, 1, 'success')"
-      ).bind(user?.username || 'claude', `account_${body.account_id}_period_${body.period_id}`).run();
+      ).bind('api', `account_${body.account_id}_period_${body.period_id}`).run();
 
       return json({ ok: true });
     }
 
     if (path === 'data/mail' && method === 'POST') {
-      if (user?.role !== 'admin') return json({ error: 'Admin required' }, 403);
+
       const body = await request.json() as { period_id: number; appeals: Record<string, unknown>[] };
       let count = 0;
       for (const a of body.appeals) {
@@ -355,12 +346,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const periodLabel = await db.prepare('SELECT label FROM reporting_periods WHERE id = ?').bind(body.period_id).first<{ label: string }>();
       await db.prepare(
         "INSERT INTO upload_log (uploaded_by, data_category, period_label, rows_imported, status) VALUES (?, 'direct_mail', ?, ?, 'success')"
-      ).bind(user?.username || 'claude', periodLabel?.label || '', count).run();
+      ).bind('api', periodLabel?.label || '', count).run();
       return json({ ok: true, imported: count });
     }
 
     if (path === 'data/email' && method === 'POST') {
-      if (user?.role !== 'admin') return json({ error: 'Admin required' }, 403);
+
       const body = await request.json() as { period_id: number; newsletters: Record<string, unknown>[] };
       let count = 0;
       for (const n of body.newsletters) {
@@ -379,12 +370,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const periodLabel = await db.prepare('SELECT label FROM reporting_periods WHERE id = ?').bind(body.period_id).first<{ label: string }>();
       await db.prepare(
         "INSERT INTO upload_log (uploaded_by, data_category, period_label, rows_imported, status) VALUES (?, 'email', ?, ?, 'success')"
-      ).bind(user?.username || 'claude', periodLabel?.label || '', count).run();
+      ).bind('api', periodLabel?.label || '', count).run();
       return json({ ok: true, imported: count });
     }
 
     if (path === 'data/thankyou' && method === 'POST') {
-      if (user?.role !== 'admin') return json({ error: 'Admin required' }, 403);
+
       const body = await request.json() as { period_id: number; receipts: Record<string, unknown>[] };
       let count = 0;
       for (const r of body.receipts) {
@@ -405,7 +396,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const periodLabel = await db.prepare('SELECT label FROM reporting_periods WHERE id = ?').bind(body.period_id).first<{ label: string }>();
       await db.prepare(
         "INSERT INTO upload_log (uploaded_by, data_category, period_label, rows_imported, status) VALUES (?, 'thank_you', ?, ?, 'success')"
-      ).bind(user?.username || 'claude', periodLabel?.label || '', count).run();
+      ).bind('api', periodLabel?.label || '', count).run();
       return json({ ok: true, imported: count });
     }
 
@@ -413,7 +404,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     // DATA DELETE
     // ============================================================
     if (path.startsWith('data/') && method === 'DELETE') {
-      if (user?.role !== 'admin') return json({ error: 'Admin required' }, 403);
+
       const parts = path.split('/');
       const category = parts[1];
       const pid = parseInt(parts[2]);
