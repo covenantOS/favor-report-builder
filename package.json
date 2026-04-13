@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "db:init": "wrangler d1 execute favor-reports --local --file=db/schema.sql",
     "db:seed": "wrangler d1 execute favor-reports --local --file=db/seed.sql",
-    "pages:dev": "wrangler pages dev ./dist"
+    "pages:dev": "wrangler pages dev ./dist",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name=favor-report-builder --branch=main"
   },
   "dependencies": {
     "date-fns": "^4.1.0",
