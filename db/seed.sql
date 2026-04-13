@@ -6,9 +6,6 @@ INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (20
 INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2025, 4, NULL, '2025-Q4');
 -- 2026 Q1
 INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2026, 1, NULL, '2026-Q1');
-INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2026, 1, 1, '2026-01');
-INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2026, 1, 2, '2026-02');
-INSERT OR IGNORE INTO reporting_periods (year, quarter, month, label) VALUES (2026, 1, 3, '2026-03');
 
 -- ============================================================
 -- 2025 DIRECT MAIL APPEALS (reference data for YoY comparison)
