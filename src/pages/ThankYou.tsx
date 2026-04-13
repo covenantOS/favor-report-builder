@@ -46,8 +46,7 @@ export function ThankYou() {
   const totalMailed = receipts.reduce((s, r) => s + (r.num_solicitors || 0), 0) || 877;
   const responseRate = totalMailed > 0 ? (totalGifts / totalMailed) * 100 : 0;
 
-  // Cost estimates (BRM $1.77/return; fixed per piece TBD - using placeholder until actual invoice provided)
-  const fixedCostPerPiece = 1.50; // conservative estimate; update when actual invoice available
+  const fixedCostPerPiece = 1.96; // printing, envelope, postage per piece (from 2025 rate)
   const brmCostPerReturn = 1.77;
   const fixedCost = totalMailed * fixedCostPerPiece;
   const brmCost = totalGifts * brmCostPerReturn;
@@ -100,7 +99,7 @@ export function ThankYou() {
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Estimated Costs</h3>
               <div className="text-3xl font-bold text-gray-800">{formatCurrency(totalCost)}</div>
-              <div className="text-xs text-gray-500">Estimated &mdash; update when actual invoice available</div>
+              <div className="text-xs text-gray-500">BRM, envelope, receipt, postage</div>
               <div className="mt-4 space-y-1.5 border-t border-gray-100 pt-3 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500">Printing/Postage</span><span className="font-semibold">{formatCurrency(fixedCost)}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">BRM Returns</span><span className="font-semibold">{formatCurrency(brmCost)} <span className="text-gray-400 text-xs">({totalGifts} x $1.77)</span></span></div>
