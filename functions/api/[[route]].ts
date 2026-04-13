@@ -226,14 +226,52 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const pid = parseInt(url.searchParams.get('period_id') || '0');
       if (!pid) return json({ error: 'period_id required' }, 400);
       const rows = await db.prepare('SELECT * FROM email_newsletters WHERE period_id = ? ORDER BY date_sent DESC').bind(pid).all();
-      return json({ newsletters: rows.results });
+
+      // YoY for email
+      const currentPeriod = await db.prepare('SELECT * FROM reporting_periods WHERE id = ?').bind(pid).first<{ year: number; quarter: number }>();
+      let yoySummary = null;
+      if (currentPeriod) {
+        const prevPeriod = await db.prepare(
+          'SELECT * FROM reporting_periods WHERE year = ? AND quarter = ? AND month IS NULL'
+        ).bind(currentPeriod.year - 1, currentPeriod.quarter).first<{ id: number; label: string }>();
+        if (prevPeriod) {
+          const prev = await db.prepare(
+            `SELECT COALESCE(SUM(recipients),0) as recipients, COALESCE(SUM(opens),0) as opens,
+             COALESCE(SUM(clicks),0) as clicks, COALESCE(SUM(total_raised),0) as totalRaised,
+             COALESCE(SUM(transactions),0) as gifts
+             FROM email_newsletters WHERE period_id = ? AND is_resend = 0`
+          ).bind(prevPeriod.id).first();
+          yoySummary = { ...prev, periodLabel: prevPeriod.label };
+        }
+      }
+
+      return json({ newsletters: rows.results, yoy: yoySummary });
     }
 
     if (path === 'dashboard/thankyou' && method === 'GET') {
       const pid = parseInt(url.searchParams.get('period_id') || '0');
       if (!pid) return json({ error: 'period_id required' }, 400);
       const rows = await db.prepare('SELECT * FROM thank_you_receipts WHERE period_id = ? ORDER BY appeal_id').bind(pid).all();
-      return json({ receipts: rows.results });
+
+      // YoY for TY receipts
+      const currentPeriod = await db.prepare('SELECT * FROM reporting_periods WHERE id = ?').bind(pid).first<{ year: number; quarter: number }>();
+      let yoySummary = null;
+      if (currentPeriod) {
+        const prevPeriod = await db.prepare(
+          'SELECT * FROM reporting_periods WHERE year = ? AND quarter = ? AND month IS NULL'
+        ).bind(currentPeriod.year - 1, currentPeriod.quarter).first<{ id: number; label: string }>();
+        if (prevPeriod) {
+          const prev = await db.prepare(
+            `SELECT COALESCE(SUM(gifts),0) as gifts, COALESCE(SUM(donors),0) as donors,
+             COALESCE(SUM(total_given),0) as totalGiven, COALESCE(SUM(num_solicitors),0) as receiptsMailed,
+             COALESCE(SUM(total_cost),0) as totalCost
+             FROM thank_you_receipts WHERE period_id = ?`
+          ).bind(prevPeriod.id).first();
+          yoySummary = { ...prev, periodLabel: prevPeriod.label };
+        }
+      }
+
+      return json({ receipts: rows.results, yoy: yoySummary });
     }
 
     if (path === 'dashboard/trends' && method === 'GET') {
